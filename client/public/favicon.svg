@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" role="img" aria-label="Agent Guard mark">
+  <rect x="1.5" y="1.5" width="29" height="29" rx="7.5" fill="#0B111E" stroke="#1E293B" stroke-width="1.5" />
+  <path
+    d="M16 5.25L24.75 8.75V15.1C24.75 20.55 20.95 24.85 16 26.75C11.05 24.85 7.25 20.55 7.25 15.1V8.75L16 5.25Z"
+    stroke="#10F0A0"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M11.5 21L16 10.5L20.5 21"
+    stroke="#F8FAFC"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path d="M12.6 17.5H13.6M18.4 17.5H19.4" stroke="#22D3EE" stroke-width="2" stroke-linecap="round" />
+  <circle cx="16" cy="17.5" r="2.1" fill="#22D3EE" />
+</svg>
+

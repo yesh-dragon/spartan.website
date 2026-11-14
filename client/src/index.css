@@ -1,0 +1,380 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --ag-canvas: #04070d;
+  --ag-canvas-rgb: 4 7 13;
+  --ag-surface: #090e18;
+  --ag-surface-rgb: 9 14 24;
+  --ag-surface-2: #0e1626;
+  --ag-surface-2-rgb: 14 22 38;
+  --ag-surface-3: #141f34;
+  --ag-surface-3-rgb: 20 31 52;
+  --ag-ink: #f1f5f9;
+  --ag-ink-rgb: 241 245 249;
+  --ag-ink-muted: #94a3b8;
+  --ag-ink-muted-rgb: 148 163 184;
+  --ag-ink-dim: #8093ab;
+  --ag-ink-dim-rgb: 128 147 171;
+  --ag-accent: #10f0a0;
+  --ag-accent-rgb: 16 240 160;
+  --ag-telemetry: #22d3ee;
+  --ag-telemetry-rgb: 34 211 238;
+  --ag-danger: #ff4d6d;
+  --ag-danger-rgb: 255 77 109;
+  --ag-warning: #f59e0b;
+  --ag-warning-rgb: 245 158 11;
+  --ag-hairline: rgba(148, 163, 184, 0.16);
+  --ag-hairline-bright: rgba(148, 163, 184, 0.30);
+  --ag-shadow-glow: 0 0 0 1px rgba(16, 240, 160, 0.25), 0 12px 40px -12px rgba(16, 240, 160, 0.18);
+  --ag-shadow-glow-danger: 0 0 0 1px rgba(255, 77, 109, 0.35), 0 12px 40px -12px rgba(255, 77, 109, 0.22);
+  --ag-shadow-panel: 0 16px 48px -20px rgba(0, 0, 0, 0.85);
+}
+
+html.light {
+  color-scheme: light;
+  --ag-canvas: #f6f8fc;
+  --ag-canvas-rgb: 246 248 252;
+  --ag-surface: #ffffff;
+  --ag-surface-rgb: 255 255 255;
+  --ag-surface-2: #eef2f7;
+  --ag-surface-2-rgb: 238 242 247;
+  --ag-surface-3: #e2e8f0;
+  --ag-surface-3-rgb: 226 232 240;
+  --ag-ink: #0b1220;
+  --ag-ink-rgb: 11 18 32;
+  --ag-ink-muted: #334155;
+  --ag-ink-muted-rgb: 51 65 85;
+  --ag-ink-dim: #475569;
+  --ag-ink-dim-rgb: 71 85 105;
+  --ag-accent: #047857;
+  --ag-accent-rgb: 4 120 87;
+  --ag-telemetry: #0e7490;
+  --ag-telemetry-rgb: 14 116 144;
+  --ag-danger: #b91c1c;
+  --ag-danger-rgb: 185 28 28;
+  --ag-warning: #b45309;
+  --ag-warning-rgb: 180 83 9;
+  --ag-hairline: rgba(15, 23, 42, 0.12);
+  --ag-hairline-bright: rgba(15, 23, 42, 0.24);
+  --ag-shadow-glow: 0 0 0 1px rgba(4, 120, 87, 0.20), 0 10px 28px -10px rgba(4, 120, 87, 0.16);
+  --ag-shadow-glow-danger: 0 0 0 1px rgba(185, 28, 28, 0.22), 0 10px 28px -10px rgba(185, 28, 28, 0.16);
+  --ag-shadow-panel: 0 12px 32px -12px rgba(15, 23, 42, 0.10), 0 2px 6px -1px rgba(15, 23, 42, 0.05);
+}
+
+@layer base {
+  html {
+    background-color: var(--ag-canvas);
+    color: var(--ag-ink);
+    font-family: "Inter", system-ui, sans-serif;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--ag-canvas);
+    color: var(--ag-ink);
+    overflow-x: clip;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+
+  code,
+  pre,
+  .font-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--ag-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Fluid typographic helpers for tiny 280px viewports through 4K */
+.text-fluid-hero {
+  font-size: clamp(1.875rem, 1.35rem + 2.8vw, 3.75rem);
+  line-height: 1.06;
+}
+
+.text-fluid-h2 {
+  font-size: clamp(1.5rem, 1.15rem + 1.5vw, 2.25rem);
+  line-height: 1.15;
+}
+
+.bg-soc-grid {
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+html.light .bg-soc-grid {
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
+}
+
+.bg-soc-dots {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+html.light .bg-soc-dots {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.12) 1px, transparent 1px);
+}
+
+.bg-noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+.ag-obsidian-aura {
+  background-image:
+    radial-gradient(ellipse 68% 44% at 50% -6%, rgba(16, 240, 160, 0.085), transparent 72%),
+    radial-gradient(ellipse 46% 36% at 88% 36%, rgba(34, 211, 238, 0.06), transparent 70%),
+    radial-gradient(ellipse 42% 34% at 12% 76%, rgba(16, 240, 160, 0.045), transparent 70%);
+}
+
+html.light .ag-obsidian-aura {
+  background-image: none;
+}
+
+@keyframes border-beam-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.border-beam-conic {
+  animation: border-beam-rotate 8s linear infinite;
+}
+
+@keyframes scan-sweep {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.7;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(420%);
+    opacity: 0;
+  }
+}
+
+.scanline-sweep {
+  animation: scan-sweep 3.8s ease-in-out infinite;
+}
+
+/* Interactive brand logo & colorful icon feedback (150-400ms) */
+@keyframes ag-icon-pop {
+  0% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.24);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ag-icon-ripple {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+@keyframes ag-particle-fly {
+  0% {
+    transform: translate(0, 0) scale(0.95);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(var(--tx, 0px), var(--ty, -12px)) scale(0.1);
+    opacity: 0;
+  }
+}
+
+@keyframes ag-bell-ring {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(15deg);
+  }
+  45% {
+    transform: rotate(-13deg);
+  }
+  70% {
+    transform: rotate(8deg);
+  }
+  88% {
+    transform: rotate(-4deg);
+  }
+}
+
+@keyframes ag-brand-node-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.88;
+  }
+}
+
+.ag-icon-pop {
+  animation: ag-icon-pop 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ag-icon-ring-ripple {
+  animation: ag-icon-ripple 360ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ag-particle {
+  animation: ag-particle-fly 360ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ag-bell-ring {
+  transform-origin: 50% 20%;
+  animation: ag-bell-ring 380ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.ag-brand-mark:hover .ag-brand-shield,
+.ag-brand-mark:focus-visible .ag-brand-shield {
+  stroke: var(--ag-telemetry);
+  transition: stroke 240ms ease;
+}
+
+.ag-brand-mark:hover .ag-brand-node,
+.ag-brand-mark:focus-visible .ag-brand-node {
+  transform-origin: 16px 17.5px;
+  animation: ag-brand-node-pulse 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Showcase, Vynora & Rotor spatial glass / kinetic utilities */
+.ag-glass-dock {
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.68) 0%, rgba(15, 23, 42, 0.42) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 40px -12px rgba(0, 0, 0, 0.55);
+}
+
+.ag-glass-specular {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 28%,
+    transparent 54%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
+}
+
+.ag-recessed-input {
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html.light .ag-recessed-input {
+  box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.08), 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+@keyframes ag-marquee-scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ag-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: ag-marquee-scroll var(--ag-marquee-duration, 26s) linear infinite;
+}
+
+.ag-marquee-group:hover .ag-marquee-track {
+  animation-play-state: paused;
+}
+
+/* Safe-area padding utilities */
+.safe-px {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.safe-pb {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .border-beam-conic,
+  .scanline-sweep,
+  .animate-spin-slow,
+  .animate-pulse-slow,
+  .ag-icon-pop,
+  .ag-icon-ring-ripple,
+  .ag-particle,
+  .ag-bell-ring,
+  .ag-marquee-track,
+  .ag-brand-mark:hover .ag-brand-node,
+  .ag-brand-mark:focus-visible .ag-brand-node {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Theme-aware sleek scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ag-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.42);
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.18);
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.34);
+}
