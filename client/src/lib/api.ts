@@ -13,7 +13,7 @@ import type {
 } from "@agent-guard/shared";
 import { supabase } from "./supabase";
 
-const API_BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8080/api").replace(
+const API_BASE = ((import.meta.env.VITE_API_URL as string | undefined)?.trim() || "/api").replace(
   /\/+$/,
   "",
 );
@@ -51,10 +51,29 @@ async function requestJson<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers,
+    });
+  } catch (err) {
+    const detail = err instanceof Error && err.message ? ` (${err.message})` : "";
+    throw new ApiError(
+      0,
+      "NETWORK_ERROR",
+      `Unable to reach the Agent Guard API at ${API_BASE}${detail}. Ensure the backend server is running or VITE_API_URL is configured.`,
+    );
+  }
+
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    throw new ApiError(
+      res.status || 502,
+      "INVALID_API_RESPONSE",
+      `API endpoint ${API_BASE}${path} returned non-JSON content. Check that the Express backend is running and VITE_API_URL points to it.`,
+    );
+  }
 
   const payload = (await res.json().catch(() => null)) as
     | { error?: { code?: string; message?: string } }

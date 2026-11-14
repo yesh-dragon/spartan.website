@@ -36,6 +36,8 @@ export function createApp(deps: AppDependencies): Express {
   app.disable("x-powered-by");
   app.use(
     helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      hsts: deps.env.NODE_ENV === "production",
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'none'"],
@@ -46,9 +48,25 @@ export function createApp(deps: AppDependencies): Express {
     }),
   );
 
+  const allowedOrigins = new Set(
+    deps.env.CLIENT_ORIGIN.split(",")
+      .map((o) => o.trim())
+      .filter(Boolean),
+  );
+  if (deps.env.NODE_ENV !== "production") {
+    allowedOrigins.add("http://localhost:5173");
+    allowedOrigins.add("http://127.0.0.1:5173");
+  }
+
   app.use(
     cors({
-      origin: deps.env.CLIENT_ORIGIN,
+      origin: (origin, cb) => {
+        if (!origin || allowedOrigins.has(origin)) {
+          cb(null, true);
+          return;
+        }
+        cb(null, false);
+      },
       credentials: false,
       allowedHeaders: ["Content-Type", "Authorization"],
       methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS"],
