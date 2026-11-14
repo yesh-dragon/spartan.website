@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { api } from "../lib/api";
 
@@ -24,26 +25,31 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [bootstrapped, setBootstrapped] = useState(false);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
   const lastBootstrappedUser = useRef<string | null>(null);
 
-  const runBootstrap = useCallback(async (userId: string) => {
-    if (lastBootstrappedUser.current === userId) {
-      setBootstrapped(true);
-      return;
-    }
-    try {
-      setBootstrapError(null);
-      await api.bootstrap();
-      lastBootstrappedUser.current = userId;
-      setBootstrapped(true);
-    } catch (err) {
-      setBootstrapError(err instanceof Error ? err.message : "Failed initializing demo workspace");
-    }
-  }, []);
+  const runBootstrap = useCallback(
+    async (userId: string) => {
+      if (lastBootstrappedUser.current === userId) {
+        setBootstrapped(true);
+        return;
+      }
+      try {
+        setBootstrapError(null);
+        await api.bootstrap();
+        lastBootstrappedUser.current = userId;
+        setBootstrapped(true);
+        void queryClient.invalidateQueries();
+      } catch (err) {
+        setBootstrapError(err instanceof Error ? err.message : "Failed initializing demo workspace");
+      }
+    },
+    [queryClient],
+  );
 
   useEffect(() => {
     if (!supabase) {
@@ -83,7 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     lastBootstrappedUser.current = null;
     setBootstrapped(false);
-  }, []);
+    queryClient.clear();
+  }, [queryClient]);
 
   const retryBootstrap = useCallback(async () => {
     if (session?.user) {

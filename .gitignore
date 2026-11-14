@@ -9,4 +9,6 @@ build
 coverage
 .vite
 *.tsbuildinfo
+_handler.cjs
+**/_handler.cjs
 
