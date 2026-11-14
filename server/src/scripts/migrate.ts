@@ -202,8 +202,13 @@ export async function verifyAndSeedWithServiceRole(
     templatesSynced = templateRows.length;
 
     if (options.demoUserEmail && options.demoUserPassword) {
-      const { data: listed } = await adminClient.auth.admin.listUsers({ perPage: 100 });
-      const existing = listed?.users.find(
+      const { data: listed, error: demoListErr } = await adminClient.auth.admin.listUsers({
+        perPage: 100,
+      });
+      if (demoListErr) {
+        throw new Error(`Failed listing Supabase Auth users: ${demoListErr.message}`);
+      }
+      const existing = (listed?.users ?? []).find(
         (u) => u.email?.toLowerCase() === options.demoUserEmail!.toLowerCase(),
       );
       if (!existing) {
