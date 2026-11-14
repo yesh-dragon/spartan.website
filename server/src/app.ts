@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -30,9 +30,57 @@ export interface AppDependencies {
   agentRunner?: AgentRunnerFn;
 }
 
+function buildAllowedOrigins(env: Pick<ServerEnv, "CLIENT_ORIGIN" | "NODE_ENV">): Set<string> {
+  const allowedOrigins = new Set(
+    env.CLIENT_ORIGIN.split(",")
+      .map((o) => o.trim())
+      .filter(Boolean),
+  );
+  if (env.NODE_ENV !== "production") {
+    allowedOrigins.add("http://localhost:5173");
+    allowedOrigins.add("http://127.0.0.1:5173");
+  }
+  for (const vercelHost of [
+    process.env.VERCEL_URL,
+    process.env.VERCEL_BRANCH_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  ]) {
+    const trimmed = vercelHost?.trim();
+    if (trimmed) {
+      allowedOrigins.add(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+    }
+  }
+  return allowedOrigins;
+}
+
+function isSameHostOrigin(origin: string, req: Request): boolean {
+  const forwardedHost = req.headers["x-forwarded-host"];
+  const rawHost = Array.isArray(forwardedHost)
+    ? forwardedHost[0]
+    : (forwardedHost ?? req.headers.host);
+  const host = rawHost?.split(",")[0]?.trim().toLowerCase();
+  if (!host) return false;
+
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const proto = (
+    (Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto) ?? req.protocol
+  )
+    .split(",")[0]
+    ?.trim()
+    .toLowerCase();
+
+  try {
+    const parsed = new URL(origin);
+    return parsed.host.toLowerCase() === host && (!proto || parsed.protocol === `${proto}:`);
+  } catch {
+    return false;
+  }
+}
+
 export function createApp(deps: AppDependencies): Express {
   const app = express();
 
+  app.set("trust proxy", 1);
   app.disable("x-powered-by");
   app.use(
     helmet({
@@ -48,28 +96,18 @@ export function createApp(deps: AppDependencies): Express {
     }),
   );
 
-  const allowedOrigins = new Set(
-    deps.env.CLIENT_ORIGIN.split(",")
-      .map((o) => o.trim())
-      .filter(Boolean),
-  );
-  if (deps.env.NODE_ENV !== "production") {
-    allowedOrigins.add("http://localhost:5173");
-    allowedOrigins.add("http://127.0.0.1:5173");
-  }
+  const allowedOrigins = buildAllowedOrigins(deps.env);
 
   app.use(
-    cors({
-      origin: (origin, cb) => {
-        if (!origin || allowedOrigins.has(origin)) {
-          cb(null, true);
-          return;
-        }
-        cb(null, false);
-      },
-      credentials: false,
-      allowedHeaders: ["Content-Type", "Authorization"],
-      methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS"],
+    cors<Request>((req, cb) => {
+      const origin = req.headers.origin;
+      const isAllowed = !origin || allowedOrigins.has(origin) || isSameHostOrigin(origin, req);
+      cb(null, {
+        origin: isAllowed,
+        credentials: false,
+        allowedHeaders: ["Content-Type", "Authorization"],
+        methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS"],
+      });
     }),
   );
 

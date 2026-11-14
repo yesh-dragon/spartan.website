@@ -58,7 +58,19 @@ export type AuditEventType = z.infer<typeof AuditEventTypeSchema>;
 export const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().min(1).max(65535).default(8080),
-  CLIENT_ORIGIN: z.string().url().default("http://localhost:5173"),
+  CLIENT_ORIGIN: z
+    .string()
+    .min(1)
+    .default("http://localhost:5173")
+    .refine(
+      (value) =>
+        value
+          .split(",")
+          .map((origin) => origin.trim())
+          .filter(Boolean)
+          .every((origin) => z.string().url().safeParse(origin).success),
+      "CLIENT_ORIGIN must contain valid comma-separated URLs",
+    ),
   SUPABASE_URL: z.string().url("SUPABASE_URL must be a valid URL"),
   SUPABASE_ANON_KEY: z.string().min(10, "SUPABASE_ANON_KEY is required"),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(10, "SUPABASE_SERVICE_ROLE_KEY is required"),

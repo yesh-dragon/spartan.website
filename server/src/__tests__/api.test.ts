@@ -6,6 +6,7 @@ import { computeAuditHash } from "@agent-guard/core";
 import { GENESIS_HASH, type ServerEnv } from "@agent-guard/shared";
 import { createApp } from "../app.js";
 import { parseEnv } from "../config/env.js";
+import { createServerlessHandler } from "../serverless.js";
 import { expireOverduePendingActions } from "../services/approvals.js";
 import {
   loadMigrationFiles,
@@ -630,6 +631,58 @@ describe("Agent Guard API integration & security suite", () => {
   it("fails fast with clear error details when required server env vars are missing", () => {
     expect(() => parseEnv({})).toThrow(/Server configuration error/i);
     expect(() => parseEnv({})).toThrow(/GEMINI_API_KEY/i);
+  });
+
+  it("supports comma-separated CLIENT_ORIGIN, same-host proxy CORS, and JSON 503 on misconfigured serverless env", async () => {
+    const parsed = parseEnv({
+      CLIENT_ORIGIN: "https://spartan.vercel.app, http://localhost:5173",
+      SUPABASE_URL: "https://xyzcompany.supabase.co",
+      SUPABASE_ANON_KEY: "anon-key-1234567890",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role-key-1234567890",
+      GEMINI_API_KEY: "gemini-key-1234567890",
+    });
+    expect(parsed.CLIENT_ORIGIN).toContain("https://spartan.vercel.app");
+
+    expect(() =>
+      parseEnv({
+        CLIENT_ORIGIN: "https://spartan.vercel.app, not-a-url",
+        SUPABASE_URL: "https://xyzcompany.supabase.co",
+        SUPABASE_ANON_KEY: "anon-key-1234567890",
+        SUPABASE_SERVICE_ROLE_KEY: "service-role-key-1234567890",
+        GEMINI_API_KEY: "gemini-key-1234567890",
+      }),
+    ).toThrow(/CLIENT_ORIGIN/i);
+
+    const sameHostHandler = createServerlessHandler({
+      getEnv: () => TEST_ENV,
+      getSupabase: () => createTestSupabase() as unknown as SupabaseClient,
+    });
+
+    const allowedRes = await request(sameHostHandler)
+      .get("/api/health")
+      .set("Origin", "https://preview-spartan.vercel.app")
+      .set("X-Forwarded-Host", "preview-spartan.vercel.app")
+      .set("X-Forwarded-Proto", "https");
+    expect(allowedRes.status).toBe(200);
+    expect(allowedRes.headers["access-control-allow-origin"]).toBe(
+      "https://preview-spartan.vercel.app",
+    );
+
+    const blockedRes = await request(sameHostHandler)
+      .get("/api/health")
+      .set("Origin", "https://evil.example")
+      .set("X-Forwarded-Host", "preview-spartan.vercel.app")
+      .set("X-Forwarded-Proto", "https");
+    expect(blockedRes.status).toBe(200);
+    expect(blockedRes.headers["access-control-allow-origin"]).toBeUndefined();
+
+    const brokenHandler = createServerlessHandler({
+      getEnv: () => parseEnv({}),
+    });
+    const misconfiguredRes = await request(brokenHandler).post("/api/bootstrap").send({});
+    expect(misconfiguredRes.status).toBe(503);
+    expect(misconfiguredRes.headers["content-type"]).toContain("application/json");
+    expect(misconfiguredRes.body.error.code).toBe("SERVER_MISCONFIGURED");
   });
 
   it("loads /supabase/migrations/001_initial_schema.sql and seeds templates & users via service role", async () => {

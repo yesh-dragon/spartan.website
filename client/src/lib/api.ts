@@ -71,7 +71,7 @@ async function requestJson<T>(
     throw new ApiError(
       res.status || 502,
       "INVALID_API_RESPONSE",
-      `API endpoint ${API_BASE}${path} returned non-JSON content. Check that the Express backend is running and VITE_API_URL points to it.`,
+      `API endpoint ${API_BASE}${path} returned non-JSON content (HTTP ${res.status || 502}). Check that the Express backend / Vercel API function is deployed or VITE_API_URL points to it.`,
     );
   }
 
